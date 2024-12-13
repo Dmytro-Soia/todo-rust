@@ -1,31 +1,35 @@
-use std::env::args;
-use std::fs;
-use std::fs::{read_to_string,  OpenOptions};
-use std::io;
+use serde::{Serialize, Deserialize};
+use std::fs::{read_to_string, File};
+use std::io::{self, Write};
 
-fn main() {
+
+#[derive(Serialize, Deserialize)]
+struct Todo {
+    name: String,
+}
+
+fn main() {              
+    
     let mut todo = String::new();
     println!("New to-do?");
     io::stdin().read_line(&mut todo).expect("Read line failed.");
-
-    let mut read_file: Vec<String> = match read_to_string("data.txt") {
-        Ok(data) => data.lines().map(String::from).collect(),
+    
+    let mut read_file: Vec<Todo> = match read_to_string("data.json") {
+        Ok(data) => serde_json::from_str(&data).expect("Cannot deserialize file"),
         Err(_) => Vec::new(),
     };
+
+    let todo  = todo.trim();
 
     if todo.contains("--delete") {
         let line_number:usize = todo.split_whitespace().last().expect("Can't find line with this number").parse().unwrap();
         read_file.remove(line_number - 1);
     } else {
-        read_file.push(todo.to_string());
+        read_file.push(Todo { name: todo.to_string() });
     };
 
-     
-    let _todo_file = OpenOptions::new()
-    .create(true)
-    .read(true)
-    .append(true)
-    .open("data.txt").expect("Cannot open file");
+    let mut _data_file = File::create("data.json").expect("Cannot create file");
+    let json_content = serde_json::to_string(&read_file).expect("Cannot write in file");
 
-    fs::write("data.txt", read_file.join("\n")).expect("Err");
+    _data_file.write_all(json_content.as_bytes()).expect("Cannot write in file");
 }
