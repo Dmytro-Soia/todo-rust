@@ -17,7 +17,10 @@ struct Args {
     delete: Option<usize>,
 
     #[arg(short = 'D', long)]
-    done: Option<usize>
+    done: Option<usize>,
+
+    #[arg(short, long)]
+    undone: Option<usize>,
 }
 
 fn save_todo(todos: &mut Vec<Todo>) {
@@ -41,15 +44,21 @@ fn main() {
 
     if let Some(_todo_to_delete) = args.delete {
         if read_file.len() < _todo_to_delete {
-                println!("Cannot delete this todos: todo doesn't exist")
+            println!("Cannot delete this todos: todo doesn't exist")
         } else {
             read_file.remove(_todo_to_delete - 1);
         }
     } else if let Some(_todo_to_done) = args.done {
         if read_file.len() < _todo_to_done {
-                println!("Cannot done this todos: todo doesn't exist")
+            println!("Cannot done this todos: todo doesn't exist")
         } else {
             read_file[_todo_to_done - 1].status = true
+        }
+    } else if let Some(_todo_to_undone) = args.undone {
+        if read_file.len() < _todo_to_undone {
+            println!("Cannot undone this todos: todo doesn't exist")
+        } else {
+            read_file[_todo_to_undone - 1].status = false
         }
     } else {
             save_todo(&mut read_file);
