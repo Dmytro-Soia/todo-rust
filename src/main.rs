@@ -29,6 +29,9 @@ struct Args {
 
     #[arg(long)]
     due: Option<String>,
+
+    #[arg(short, long)]
+    list: bool,
 }
 
 fn save_todo(todos: &mut Vec<Todo>) {
@@ -75,13 +78,23 @@ fn main() {
             } else {
                 let format = "%y-%m-%d";
                 let due_date =
-                    NaiveDate::parse_from_str(&due_date, format).expect("Cannot write date");
+                    NaiveDate::parse_from_str(&due_date, format).expect("Cannot parse date");
                 read_file[id - 1].deadline = Some(due_date);
             }
-        } else {
+        }  else {
             println!("Set an action!")
         }
-    } else {
+    } else if args.list {
+        for todo in read_file.iter() {
+
+            let status = match todo.status {
+                true => "Done",
+                false => "Undone"
+            };
+
+            println!("{} - {}", todo.name, status)
+        }
+        } else {
         save_todo(&mut read_file);
     }
 
