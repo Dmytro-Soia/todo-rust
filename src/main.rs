@@ -1,3 +1,4 @@
+use chrono::naive::NaiveDate;
 use clap::Parser;
 use core::option::Option;
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,7 @@ use std::io::{self, Write};
 struct Todo {
     name: String,
     status: bool,
+    deadline: Option<NaiveDate>,
 }
 
 #[derive(Parser, Debug)]
@@ -36,6 +38,7 @@ fn save_todo(todos: &mut Vec<Todo>) {
     todos.push(Todo {
         name: todo.trim().to_string(),
         status: false,
+        deadline: None,
     });
 }
 
@@ -65,6 +68,15 @@ fn main() {
                 println!("Cannot undone this todos: todo doesn't exist")
             } else {
                 read_file[id - 1].status = false
+            }
+        } else if let Some(due_date) = args.due {
+            if read_file.len() < id {
+                println!("Cannot date this todos: todo doesn't exist")
+            } else {
+                let format = "%y-%m-%d";
+                let due_date =
+                    NaiveDate::parse_from_str(&due_date, format).expect("Cannot write date");
+                read_file[id - 1].deadline = Some(due_date);
             }
         } else {
             println!("Set an action!")
